@@ -41,6 +41,7 @@ char **parse_line(char *line)
 	int bufsize = 64, pos = 0;
 	char **tokens = NULL;
 	char *token, *saveptr;
+	int i; /* moved declaration here for C89 compatibility */
 
 	if (!line)
 		return (NULL);
@@ -56,7 +57,7 @@ char **parse_line(char *line)
 		if (!tokens[pos])
 		{
 			/* free allocated tokens so far */
-			for (int i = 0; i < pos; i++)
+			for (i = 0; i < pos; i++)
 				free(tokens[i]);
 			free(tokens);
 			return (NULL);
