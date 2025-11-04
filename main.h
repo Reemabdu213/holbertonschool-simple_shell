@@ -11,7 +11,7 @@
 extern char **environ;
 
 char *trim_spaces(char *str);
-int parse_command(char *line, char **args);
-void execute_command(char **args, char *line, char *line_copy);
+int parse_args(char *line, char **args);
+void exec_cmd(char **args, char *line, char *copy);
 
 #endif
