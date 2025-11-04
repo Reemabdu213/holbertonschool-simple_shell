@@ -22,10 +22,9 @@ int main(void)
         
         if (read == -1)
         {
-            free(line);
             if (isatty(STDIN_FILENO))
                 write(STDOUT_FILENO, "\n", 1);
-            break;
+            break;  //
         }
 
         if (line[read - 1] == '\n')
@@ -50,7 +49,7 @@ int main(void)
             if (execve(line, args, environ) == -1)
             {
                 perror(line);
-                free(line);
+                free(line);  // 
                 exit(127);
             }
         }
@@ -60,6 +59,6 @@ int main(void)
         }
     }
 
-    free(line);
+    free(line);  // 
     return (0);
 }
