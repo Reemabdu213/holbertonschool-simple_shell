@@ -11,122 +11,99 @@ char *trim_spaces(char *str)
 
 	while (*str == ' ' || *str == '\t' || *str == '\n')
 		str++;
-
 	if (*str == '\0')
 		return (str);
-
 	end = str + strlen(str) - 1;
 	while (end > str && (*end == ' ' || *end == '\t' || *end == '\n'))
 		end--;
-
 	*(end + 1) = '\0';
-
 	return (str);
 }
 
 /**
- * parse_command - Parse command line into arguments
+ * parse_args - Parse command line into arguments
  * @line: Command line string
  * @args: Array to store arguments
  * Return: Number of arguments
  */
-int parse_command(char *line, char **args)
+int parse_args(char *line, char **args)
 {
 	int i = 0;
-	char *token;
+	char *token = strtok(line, " \t\n");
 
-	token = strtok(line, " \t\n");
-	while (token != NULL && i < 63)
+	while (token && i < 63)
 	{
-		args[i] = token;
-		i++;
+		args[i++] = token;
 		token = strtok(NULL, " \t\n");
 	}
 	args[i] = NULL;
-
 	return (i);
 }
 
 /**
- * execute_command - Fork and execute command
+ * exec_cmd - Execute command with arguments
  * @args: Array of arguments
- * @line: Original line for memory cleanup
- * @line_copy: Copy of line for memory cleanup
+ * @line: Original line
+ * @copy: Copy of line
  */
-void execute_command(char **args, char *line, char *line_copy)
+void exec_cmd(char **args, char *line, char *copy)
 {
-	pid_t pid;
-	int status;
-
-	pid = fork();
+	pid_t pid = fork();
 
 	if (pid == -1)
 	{
 		perror("Error");
 		return;
 	}
-
 	if (pid == 0)
 	{
 		if (execve(args[0], args, environ) == -1)
 		{
 			perror(args[0]);
 			free(line);
-			free(line_copy);
+			free(copy);
 			exit(127);
 		}
 	}
 	else
-	{
-		wait(&status);
-	}
+		wait(NULL);
 }
 
 /**
- * main - Simple shell 0.1
+ * main - Simple shell
  * Return: Always 0
  */
 int main(void)
 {
-	char *line = NULL, *line_copy = NULL;
-	size_t len = 0;
-	ssize_t read;
-	char *args[64];
-	char *trimmed;
+	char *line = NULL, *copy, *trimmed, *args[64];
+	size_t size = 0;
+	ssize_t nread;
 
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
 			write(STDOUT_FILENO, "$ ", 2);
-
-		read = getline(&line, &len, stdin);
-
-		if (read == -1)
+		nread = getline(&line, &size, stdin);
+		if (nread == -1)
 		{
 			if (isatty(STDIN_FILENO))
 				write(STDOUT_FILENO, "\n", 1);
 			break;
 		}
-
-		if (line[read - 1] == '\n')
-			line[read - 1] = '\0';
-
+		if (line[nread - 1] == '\n')
+			line[nread - 1] = '\0';
 		trimmed = trim_spaces(line);
-
 		if (trimmed[0] == '\0')
 			continue;
-
-		line_copy = strdup(trimmed);
-		if (line_copy == NULL || parse_command(line_copy, args) == 0)
+		copy = strdup(trimmed);
+		if (!copy || parse_args(copy, args) == 0)
 		{
-			free(line_copy);
+			free(copy);
 			continue;
 		}
-
-		execute_command(args, line, line_copy);
-		free(line_copy);
+		exec_cmd(args, line, copy);
+		free(copy);
 	}
-
 	free(line);
 	return (0);
 }
