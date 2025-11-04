@@ -48,6 +48,41 @@ int parse_command(char *line, char **args)
 }
 
 /**
+ * execute_command - Fork and execute command
+ * @args: Array of arguments
+ * @line: Original line for memory cleanup
+ * @line_copy: Copy of line for memory cleanup
+ */
+void execute_command(char **args, char *line, char *line_copy)
+{
+	pid_t pid;
+	int status;
+
+	pid = fork();
+
+	if (pid == -1)
+	{
+		perror("Error");
+		return;
+	}
+
+	if (pid == 0)
+	{
+		if (execve(args[0], args, environ) == -1)
+		{
+			perror(args[0]);
+			free(line);
+			free(line_copy);
+			exit(127);
+		}
+	}
+	else
+	{
+		wait(&status);
+	}
+}
+
+/**
  * main - Simple shell 0.1
  * Return: Always 0
  */
@@ -56,8 +91,6 @@ int main(void)
 	char *line = NULL, *line_copy = NULL;
 	size_t len = 0;
 	ssize_t read;
-	pid_t pid;
-	int status;
 	char *args[64];
 	char *trimmed;
 
@@ -84,39 +117,13 @@ int main(void)
 			continue;
 
 		line_copy = strdup(trimmed);
-		if (line_copy == NULL)
-			continue;
-
-		if (parse_command(line_copy, args) == 0)
+		if (line_copy == NULL || parse_command(line_copy, args) == 0)
 		{
 			free(line_copy);
 			continue;
 		}
 
-		pid = fork();
-
-		if (pid == -1)
-		{
-			perror("Error");
-			free(line_copy);
-			continue;
-		}
-
-		if (pid == 0)
-		{
-			if (execve(args[0], args, environ) == -1)
-			{
-				perror(args[0]);
-				free(line);
-				free(line_copy);
-				exit(127);
-			}
-		}
-		else
-		{
-			wait(&status);
-		}
-
+		execute_command(args, line, line_copy);
 		free(line_copy);
 	}
 
