@@ -1,6 +1,30 @@
 #include "main.h"
 
 /**
+ * trim_spaces - Remove leading and trailing spaces
+ * @str: String to trim
+ * Return: Pointer to trimmed string
+ */
+char *trim_spaces(char *str)
+{
+    char *end;
+
+    while (*str == ' ' || *str == '\t' || *str == '\n')
+        str++;
+
+    if (*str == '\0')
+        return (str);
+
+    end = str + strlen(str) - 1;
+    while (end > str && (*end == ' ' || *end == '\t' || *end == '\n'))
+        end--;
+
+    *(end + 1) = '\0';
+
+    return (str);
+}
+
+/**
  * main - Simple shell 0.1
  * Return: Always 0
  */
@@ -12,6 +36,7 @@ int main(void)
     pid_t pid;
     int status;
     char *args[2];
+    char *trimmed;
 
     while (1)
     {
@@ -30,7 +55,9 @@ int main(void)
         if (line[read - 1] == '\n')
             line[read - 1] = '\0';
 
-        if (line[0] == '\0')
+        trimmed = trim_spaces(line);
+
+        if (trimmed[0] == '\0')
             continue;
 
         pid = fork();
@@ -43,12 +70,12 @@ int main(void)
         
         if (pid == 0)
         {
-            args[0] = line;
+            args[0] = trimmed;
             args[1] = NULL;
             
-            if (execve(line, args, environ) == -1)
+            if (execve(trimmed, args, environ) == -1)
             {
-                perror(line);
+                perror(trimmed);
                 free(line);
                 exit(127);
             }
