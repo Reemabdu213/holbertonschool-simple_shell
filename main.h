@@ -11,5 +11,6 @@
 extern char **environ;
 
 char *trim_spaces(char *str);
+int parse_command(char *line, char **args);
 
 #endif
