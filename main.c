@@ -41,69 +41,41 @@ int parse_args(char *line, char **args)
 }
 
 /**
- * exec_cmd - Execute command with arguments
- * @args: Array of arguments
- * @line: Original line
- * @copy: Copy of line
+ * find_in_path - Find command in PATH
+ * @cmd: Command to find
+ * Return: Full path to command or NULL
  */
-void exec_cmd(char **args, char *line, char *copy)
+char *find_in_path(char *cmd)
 {
-	pid_t pid = fork();
+	char *path, *path_copy, *dir, *full_path;
+	struct stat st;
 
-	if (pid == -1)
+	if (strchr(cmd, '/'))
+		return (access(cmd, X_OK) == 0 ? cmd : NULL);
+	path = getenv("PATH");
+	if (!path)
+		return (NULL);
+	path_copy = strdup(path);
+	if (!path_copy)
+		return (NULL);
+	dir = strtok(path_copy, ":");
+	while (dir)
 	{
-		perror("Error");
-		return;
-	}
-	if (pid == 0)
-	{
-		if (execve(args[0], args, environ) == -1)
+		full_path = malloc(strlen(dir) + strlen(cmd) + 2);
+		if (!full_path)
 		{
-			perror(args[0]);
-			free(line);
-			free(copy);
-			exit(127);
+			free(path_copy);
+			return (NULL);
 		}
-	}
-	else
-		wait(NULL);
-}
-
-/**
- * main - Simple shell
- * Return: Always 0
- */
-int main(void)
-{
-	char *line = NULL, *copy, *trimmed, *args[64];
-	size_t size = 0;
-	ssize_t nread;
-
-	while (1)
-	{
-		if (isatty(STDIN_FILENO))
-			write(STDOUT_FILENO, "$ ", 2);
-		nread = getline(&line, &size, stdin);
-		if (nread == -1)
+		sprintf(full_path, "%s/%s", dir, cmd);
+		if (stat(full_path, &st) == 0 && (st.st_mode & S_IXUSR))
 		{
-			if (isatty(STDIN_FILENO))
-				write(STDOUT_FILENO, "\n", 1);
-			break;
+			free(path_copy);
+			return (full_path);
 		}
-		if (line[nread - 1] == '\n')
-			line[nread - 1] = '\0';
-		trimmed = trim_spaces(line);
-		if (trimmed[0] == '\0')
-			continue;
-		copy = strdup(trimmed);
-		if (!copy || parse_args(copy, args) == 0)
-		{
-			free(copy);
-			continue;
-		}
-		exec_cmd(args, line, copy);
-		free(copy);
+		free(full_path);
+		dir = strtok(NULL, ":");
 	}
-	free(line);
-	return (0);
+	free(path_copy);
+	return (NULL);
 }
