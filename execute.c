@@ -1,54 +1,76 @@
 #include "main.h"
 
 /**
+ * print_error - Print error message
+ * @shell_name: Name of shell
+ * @cmd_count: Command counter
+ * @cmd: Command that failed
+ */
+void print_error(char *shell_name, int cmd_count, char *cmd)
+{
+	fprintf(stderr, "%s: %d: %s: not found\n",
+		shell_name, cmd_count, cmd);
+}
+
+/**
+ * exec_child - Execute command in child process
+ * @cmd_path: Full path to command
+ * @args: Array of arguments
+ * @line: Original line
+ * @copy: Copy of line
+ */
+void exec_child(char *cmd_path, char **args, char *line, char *copy)
+{
+	if (execve(cmd_path, args, environ) == -1)
+	{
+		perror(args[0]);
+		if (cmd_path != args[0])
+			free(cmd_path);
+		free(line);
+		free(copy);
+		exit(127);
+	}
+}
+
+/**
  * exec_cmd - Execute command with arguments
  * @args: Array of arguments
  * @line: Original line
  * @copy: Copy of line
- * @shell_name: Name of shell for errors
- * @cmd_count: Command counter for error messages
+ * @info: Shell info structure
+ * Return: Exit status of command
  */
-void exec_cmd(char **args, char *line, char *copy, char *shell_name, int cmd_count)
+int exec_cmd(char **args, char *line, char *copy, t_shell *info)
 {
 	pid_t pid;
 	char *cmd_path;
 	int status;
 
-	if (is_builtin(args, line, copy))
-		return;
-
+	if (is_builtin(args, line, copy, info->last_status))
+		return (0);
 	cmd_path = find_in_path(args[0]);
 	if (!cmd_path)
 	{
-		fprintf(stderr, "%s: %d: %s: not found\n", shell_name, cmd_count, args[0]);
-		return;
+		print_error(info->name, info->cmd_count, args[0]);
+		return (127);
 	}
-
 	pid = fork();
 	if (pid == -1)
 	{
 		perror("Error");
 		if (cmd_path != args[0])
 			free(cmd_path);
-		return;
+		return (1);
 	}
-
 	if (pid == 0)
-	{
-		if (execve(cmd_path, args, environ) == -1)
-		{
-			perror(args[0]);
-			if (cmd_path != args[0])
-				free(cmd_path);
-			free(line);
-			free(copy);
-			exit(127);
-		}
-	}
+		exec_child(cmd_path, args, line, copy);
 	else
 	{
 		wait(&status);
 		if (cmd_path != args[0])
 			free(cmd_path);
+		if (WIFEXITED(status))
+			return (WEXITSTATUS(status));
 	}
+	return (0);
 }
