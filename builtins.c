@@ -5,16 +5,15 @@
  * @args: Array of arguments
  * @line: Original line
  * @copy: Copy of line
+ * @last_status: Last command exit status
  * Return: 1 to exit, 0 to continue
  */
-int handle_exit(char **args, char *line, char *copy)
+int handle_exit(char **args, char *line, char *copy, int last_status)
 {
-	int status = 0;
+	int status = last_status;
 
 	if (args[1])
-	{
 		status = atoi(args[1]);
-	}
 	free(line);
 	free(copy);
 	exit(status);
@@ -41,13 +40,14 @@ int handle_env(void)
  * @args: Array of arguments
  * @line: Original line
  * @copy: Copy of line
+ * @last_status: Last command exit status
  * Return: 1 if builtin executed, 0 otherwise
  */
-int is_builtin(char **args, char *line, char *copy)
+int is_builtin(char **args, char *line, char *copy, int last_status)
 {
 	if (strcmp(args[0], "exit") == 0)
 	{
-		handle_exit(args, line, copy);
+		handle_exit(args, line, copy, last_status);
 		return (1);
 	}
 	if (strcmp(args[0], "env") == 0)
