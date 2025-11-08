@@ -11,19 +11,27 @@
 
 extern char **environ;
 
-/* String functions */
+/**
+ * struct shell_info - Shell information
+ * @name: Shell name
+ * @cmd_count: Command counter
+ * @last_status: Last command exit status
+ */
+typedef struct shell_info
+{
+	char *name;
+	int cmd_count;
+	int last_status;
+} t_shell;
+
 char *trim_spaces(char *str);
 int parse_args(char *line, char **args);
-
-/* Path functions */
+char *_getenv(char *name);
 char *find_in_path(char *cmd);
-
-/* Builtin functions */
-int handle_exit(char **args, char *line, char *copy);
+int handle_exit(char **args, char *line, char *copy, int last_status);
 int handle_env(void);
-int is_builtin(char **args, char *line, char *copy);
-
-/* Execute functions */
-void exec_cmd(char **args, char *line, char *copy, char *shell_name, int cmd_count);
+int is_builtin(char **args, char *line, char *copy, int last_status);
+int exec_cmd(char **args, char *line, char *copy, t_shell *info);
+int process_line(char *line, t_shell *info);
 
 #endif
