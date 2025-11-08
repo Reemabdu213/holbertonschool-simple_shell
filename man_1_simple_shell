@@ -1,0 +1,65 @@
+.TH HSH 1 "November 2024" "Version 1.0" "Simple Shell Manual"
+
+.SH NAME
+hsh \- simple UNIX command line interpreter
+
+.SH SYNOPSIS
+.B hsh
+.RI [ "command" " ..."]
+
+.SH DESCRIPTION
+.B hsh
+is a simple UNIX command line interpreter that reads commands from standard input, parses them, and executes them.
+It mimics basic functionalities of the standard shell \fBsh\fR.
+
+The shell:
+.IP • 2
+Displays a prompt and waits for user input.
+.IP • 2
+Executes commands with arguments.
+.IP • 2
+Searches for executables in the PATH.
+.IP • 2
+Handles built-in commands such as \fBexit\fR and \fBenv\fR.
+.IP • 2
+Handles the "end of file" condition (Ctrl+D).
+
+.SH BUILT-IN COMMANDS
+.TP
+.B exit [status]
+Exit the shell with an optional exit status.
+If no status is provided, the exit status of the last executed command is used.
+
+.TP
+.B env
+Display the current environment variables.
+
+.SH EXAMPLES
+.PP
+Interactive mode:
+.RS
+.nf
+$ ./hsh
+$ ls -l
+$ pwd
+$ exit
+.fi
+.RE
+
+.PP
+Non-interactive mode:
+.RS
+.nf
+$ echo "ls -l" | ./hsh
+$ echo "/bin/pwd" | ./hsh
+.fi
+.RE
+
+.SH AUTHORS
+Dalal Saleh Alshamrani <11969@holbertonstudents.com>
+.br
+Reem Abdullah Aldosri <11972@holbertonstudents.com>
+
+.SH SEE ALSO
+.BR sh (1),
+.BR bash (1)
