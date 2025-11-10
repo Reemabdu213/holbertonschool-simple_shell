@@ -1,4 +1,4 @@
-.TH HSH 1 "November 2024" "Version 1.0" "Simple Shell Manual"
+ .TH HSH 1 "November 2024" "Version 1.0" "Simple Shell Manual"
 
 .SH NAME
 hsh \- simple UNIX command line interpreter
