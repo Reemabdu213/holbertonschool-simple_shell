@@ -36,6 +36,6 @@ int parse_args(char *line, char **args)
 		args[i++] = token;
 		token = strtok(NULL, " \t\n");
 	}
-	args[i] = NULL;
+ 	args[i] = NULL;
 	return (i);
 }
